@@ -1,138 +1,106 @@
-# Agentic AI Lab Assignments
+# Assignment 1: Simple Rule-Based Agent
 
-## Overview
+## Objective
 
-This repository contains four progressive assignments demonstrating Agentic AI concepts, ranging from basic rule-based agents to advanced multi-step planning agents with LLM integration.
-
----
-
-## Assignments
-
-### Assignment 1: Simple Rule-Based Agent
-
-A basic agent that uses keyword matching to identify user intent and perform actions.
-
-* **Location**: `/assignment1`
-* **Key Features**:
-
-  * Intent identification
-  * Basic calculations
-  * Date and time handling
-  * Greeting responses
+Create a simple rule-based agent that identifies user intent using keyword matching and performs appropriate actions.
 
 ---
 
-### Assignment 2: Tool-Using Agent
+## Features
 
-An agent with modular tools that can perform various tasks based on user input.
+### 1. Greeting
 
-* **Location**: `/assignment2`
-* **Key Features**:
+* Responds to greetings like "hello", "hi", "hey"
+* Time-based greetings (morning, afternoon, evening, night)
 
-  * Multiple tools (calculate, weather, summarize, random, convert, password)
-  * Modular architecture
-  * Tool selection based on input
+### 2. Calculations
 
----
+* Performs basic arithmetic operations (`+`, `-`, `*`, `/`, `%`)
+* Supports parentheses
+* Handles natural language queries (e.g., "what is 2+3")
 
-### Assignment 3: LLM-Based Agent
+### 3. Date and Time
 
-An agent that uses Groq's LLM API for intelligent decision-making with logging support.
+* Displays current date and time in multiple formats
 
-* **Location**: `/assignment3`
-* **Key Features**:
+### 4. Help System
 
-  * LLM integration
-  * Rule-based fallback system
-  * Interaction logging
+* Shows available commands with examples
 
 ---
 
-### Assignment 4: Multi-Step Agent
+## Architecture
 
-An agent that breaks complex tasks into multiple steps and executes them sequentially.
+The agent follows a simple pipeline:
 
-* **Location**: `/assignment4`
-* **Key Features**:
-
-  * Task decomposition
-  * Sequential execution
-  * Intermediate outputs
-
----
-
-## Requirements
-
-* Python 3.9 or above
-* Required package:
-
-  ```bash
-  pip install openai
-  ```
-* Groq API key (optional, for Assignment 3 LLM mode)
+1. **Input Handler** – Accepts user input
+2. **Decision Logic** – Identifies intent using keyword matching and regex
+3. **Action Execution** – Executes the appropriate response
 
 ---
 
 ## How to Run
 
 ```bash
-# Assignment 1
-cd assignment1
 python simple_agent.py
-
-# Assignment 2
-cd assignment2
-python agent.py
-
-# Assignment 3
-cd assignment3
-python llm_agent.py
-
-# Assignment 4
-cd assignment4
-python multi_step_agent.py
 ```
 
 ---
 
-## Project Structure
+## Example Interactions
 
 ```text
-agentic-ai-lab/
-├── assignment1/
-│   ├── simple_agent.py
-│   └── README.md
-├── assignment2/
-│   ├── tools.py
-│   ├── agent.py
-│   └── README.md
-├── assignment3/
-│   ├── llm_agent.py
-│   └── README.md
-├── assignment4/
-│   ├── multi_step_agent.py
-│   └── README.md
-└── README.md
+You: hello
+Agent: Good afternoon! How can I help you today?
+
+You: calculate 2+3
+Agent: Result: 5
+
+You: what is 10 * 5?
+Agent: Result: 50
+
+You: date
+Agent: Current date and time:
+  • 2026-03-30 14:30:25
+  • Monday, March 30, 2026 at 02:30 PM
+
+You: help
+Agent: Available Commands:
+  • hello, hi, hey - Greeting
+  • calculate [expression] - Math operations
+  • date, time, today - Show current date and time
+  • help - Show this help message
+
+You: exit
+Agent: Goodbye! Have a great day!
 ```
 
 ---
 
-## Learning Outcomes
+## Code Structure
 
-* Understanding agent architecture (Input → Decision → Action)
-* Tool abstraction and modular programming
-* LLM integration for intelligent decision-making
-* Task decomposition and sequential planning
-* Logging and error handling
-
----
-
-## Author
-
-Heet Sutariya
+* `SimpleAgent` class – Core agent logic
+* `identify_intent()` – Detects user intent using keywords
+* `execute_action()` – Executes corresponding actions
+* `process()` – Main pipeline handler
+* `main()` – Interactive loop
 
 ---
 
-## Date
+## Requirements
 
-March 2026
+* Python 3.9 or above
+* No external dependencies
+
+---
+
+## Testing
+
+Try the following inputs:
+
+* `hello` → Greeting response
+* `calculate 10+20` → 30
+* `date` → Current date/time
+* `what is 100/4` → 25
+* `help` → Command list
+* `exit` → Exit program
