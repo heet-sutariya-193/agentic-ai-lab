@@ -18,7 +18,7 @@ class LLMAgent:
         self.logs = []
         
         # PUT YOUR GROQ API KEY DIRECTLY HERE
-        YOUR_GROQ_API_KEY = "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"
+        YOUR_GROQ_API_KEY = "key"
         
         try:
             print("Using Groq API")

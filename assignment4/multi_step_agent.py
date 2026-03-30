@@ -18,7 +18,7 @@ class MultiStepAgent:
         self.name = "PlannerAI"
         self.tools = TOOLS
         # Your Groq API Key
-        self.api_key = "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"
+        self.api_key = "key"
         
         try:
             self.client = OpenAI(
