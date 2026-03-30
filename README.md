@@ -1,102 +1,138 @@
-\# Agentic AI Lab Assignments
+# Agentic AI Lab Assignments
 
+## Overview
 
+This repository contains four progressive assignments demonstrating Agentic AI concepts, ranging from basic rule-based agents to advanced multi-step planning agents with LLM integration.
 
-This repository contains four progressive assignments demonstrating Agentic AI concepts.
+---
 
+## Assignments
 
+### Assignment 1: Simple Rule-Based Agent
 
-\## Assignments
+A basic agent that uses keyword matching to identify user intent and perform actions.
 
+* **Location**: `/assignment1`
+* **Key Features**:
 
+  * Intent identification
+  * Basic calculations
+  * Date and time handling
+  * Greeting responses
 
-\### Assignment 1: Simple Rule-Based Agent
+---
 
-\- Keyword matching for intent identification
+### Assignment 2: Tool-Using Agent
 
-\- Basic actions: calculations, date/time, greetings
+An agent with modular tools that can perform various tasks based on user input.
 
-\- \*\*Location\*\*: `/assignment1`
+* **Location**: `/assignment2`
+* **Key Features**:
 
+  * Multiple tools (calculate, weather, summarize, random, convert, password)
+  * Modular architecture
+  * Tool selection based on input
 
+---
 
-\### Assignment 2: Tool-Using Agent
+### Assignment 3: LLM-Based Agent
 
-\- Modular tool system with 4 tools
+An agent that uses Groq's LLM API for intelligent decision-making with logging support.
 
-\- Tool selection based on input
+* **Location**: `/assignment3`
+* **Key Features**:
 
-\- \*\*Location\*\*: `/assignment2`
+  * LLM integration
+  * Rule-based fallback system
+  * Interaction logging
 
+---
 
+### Assignment 4: Multi-Step Agent
 
-\### Assignment 3: LLM-Based Agent
+An agent that breaks complex tasks into multiple steps and executes them sequentially.
 
-\- AI-powered decision making (optional)
+* **Location**: `/assignment4`
+* **Key Features**:
 
-\- Logging system for interactions
+  * Task decomposition
+  * Sequential execution
+  * Intermediate outputs
 
-\- Falls back to rule-based if no API key
+---
 
-\- \*\*Location\*\*: `/assignment3`
+## Requirements
 
+* Python 3.9 or above
+* Required package:
 
+  ```bash
+  pip install openai
+  ```
+* Groq API key (optional, for Assignment 3 LLM mode)
 
-\### Assignment 4: Multi-Step Agent
+---
 
-\- Task decomposition and planning
-
-\- Sequential execution of multiple steps
-
-\- Handles complex queries
-
-\- \*\*Location\*\*: `/assignment4`
-
-
-
-\## Requirements
-
-
-
-\- Python 3.9+
-
-\- See individual assignment READMEs for specific requirements
-
-
-
-\## How to Run Each Assignment
-
-
+## How to Run
 
 ```bash
-
-\# Assignment 1
-
+# Assignment 1
 cd assignment1
+python simple_agent.py
 
-python simple\_agent.py
-
-
-
-\# Assignment 2
-
+# Assignment 2
 cd assignment2
-
 python agent.py
 
-
-
-\# Assignment 3
-
+# Assignment 3
 cd assignment3
+python llm_agent.py
 
-python llm\_agent.py
-
-
-
-\# Assignment 4
-
+# Assignment 4
 cd assignment4
+python multi_step_agent.py
+```
 
-python multi\_step\_agent.py
+---
 
+## Project Structure
+
+```text
+agentic-ai-lab/
+├── assignment1/
+│   ├── simple_agent.py
+│   └── README.md
+├── assignment2/
+│   ├── tools.py
+│   ├── agent.py
+│   └── README.md
+├── assignment3/
+│   ├── llm_agent.py
+│   └── README.md
+├── assignment4/
+│   ├── multi_step_agent.py
+│   └── README.md
+└── README.md
+```
+
+---
+
+## Learning Outcomes
+
+* Understanding agent architecture (Input → Decision → Action)
+* Tool abstraction and modular programming
+* LLM integration for intelligent decision-making
+* Task decomposition and sequential planning
+* Logging and error handling
+
+---
+
+## Author
+
+Heet Sutariya
+
+---
+
+## Date
+
+March 2026
