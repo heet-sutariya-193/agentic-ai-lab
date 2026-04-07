@@ -1,46 +1,93 @@
-# Assignment 4: Multi-Step Agent (Planning)
+# Assignment 4: Multi-Step Agent (Planning with Gemini API)
 
 ## Objective
 
-Build an agent capable of decomposing complex queries into multiple steps, planning execution, and producing intermediate outputs.
+Build an intelligent agent that decomposes complex queries into multiple steps, generates a structured execution plan using an LLM, and executes each step sequentially with intermediate outputs.
 
 ---
 
 ## Features
 
-### Task Decomposition
+### LLM-Based Planning (Gemini API)
 
-* Breaks complex queries into sequential steps
-* Uses LLM (Groq API) for intelligent planning
-* Falls back to rule-based planning if LLM is unavailable
+* Uses **Google Gemini API (`gemini-2.5-flash`)** for task decomposition
+* Converts user queries into a **JSON execution plan**
+* Each step includes:
 
-### Sequential Execution
+  * `step` (order)
+  * `tool` (which tool to use)
+  * `params` (input for the tool)
+
+---
+
+### Structured Plan Generation
+
+* LLM returns structured JSON instead of plain text
+* Example:
+
+```json id="ex1"
+[
+  {"step": 1, "tool": "calculate", "params": "10+20+30"},
+  {"step": 2, "tool": "calculate", "params": "(10+20+30)/3"},
+  {"step": 3, "tool": "summarize", "params": "The average is"}
+]
+```
+
+---
+
+### Fallback Planning System
+
+* If LLM fails or JSON parsing fails:
+
+  * Uses **rule-based planning**
+  * Handles:
+
+    * Average calculations
+    * Weather queries
+    * Random numbers
+    * Password generation
+    * Unit conversion
+
+---
+
+### Sequential Execution Engine
 
 * Executes steps in order
-* Chains outputs between steps
-* Displays intermediate results at each stage
+* Supports **result chaining between steps**
+* Automatically extracts numeric outputs for reuse
 
-### Multi-Step Capabilities
+Example:
 
-* Average calculation with summarization
-* Random number generation workflows
-* Combined operations (e.g., weather + calculation)
+* Step 1 → Result = 60
+* Step 2 uses `(60)/3`
+
+---
+
+### Intermediate Output Display
+
+* Shows detailed execution logs:
+
+  * Planning phase
+  * Step-by-step execution
+  * Final output
 
 ---
 
 ## How to Run
 
-```bash id="d1h8zk"
+```bash id="run1"
 python multi_step_agent.py
 ```
+
+> Note: API key is embedded in the code for lab/demo purposes
 
 ---
 
 ## Example Interactions
 
-### Example 1: Average with Summary
+### Example 1: Average + Summary
 
-```text id="l2p9va"
+```text id="ex2"
 You: Find the average of 10, 20, 30 and then summarize the result
 
 [PLANNING PHASE]
@@ -64,26 +111,9 @@ Agent: Completed! Final result: Summary: The average is 20.0
 
 ---
 
-### Example 2: Random Number
+### Example 2: Multi-Step Mixed Task
 
-```text id="v7k2sm"
-You: random number
-
-[PLANNING PHASE]
-Plan Created:
-  Step 1: random - 1,100
-
-[EXECUTION PHASE]
-[STEP 1] Result: Random number between 1 and 100: 47
-
-Agent: Completed! Final result: Random number between 1 and 100: 47
-```
-
----
-
-### Example 3: Weather with Calculation
-
-```text id="j9t3qw"
+```text id="ex3"
 You: Get weather in London and then calculate 100/4
 
 [PLANNING PHASE]
@@ -100,25 +130,48 @@ Agent: Completed! Final result: 25
 
 ---
 
-## Code Structure
+### Example 3: Random + Chaining
 
-* `__init__()` – Initializes Groq API client
-* `create_plan()` – Uses LLM to generate execution plan
-* `fallback_plan()` – Rule-based planning logic
-* `execute_plan()` – Executes steps sequentially with chaining
-* `process()` – Main pipeline (Plan → Execute → Output)
+```text id="ex4"
+You: Generate a random number and then add 10 to it
+
+[PLANNING PHASE]
+Plan Created:
+  Step 1: random - 1,100
+  Step 2: calculate - X+10
+
+[EXECUTION PHASE]
+[STEP 1] Result: 47
+[STEP 2] Result: 57
+```
 
 ---
 
-## Planning Examples
+## Code Structure
 
-| Query                   | Plan Steps                |
-| ----------------------- | ------------------------- |
-| Find average of numbers | Sum → Average             |
-| Average and summarize   | Sum → Average → Summarize |
-| Random number           | Generate random number    |
-| Weather query           | Fetch weather             |
-| Weather + calculation   | Weather → Calculate       |
+* `MultiStepAgent` class – Main planning agent 
+* `create_plan()` – Calls Gemini API and parses JSON plan
+* `fallback_plan()` – Rule-based backup planning
+* `execute_plan()` – Executes steps with chaining logic
+* `process()` – Full pipeline (Plan → Execute → Output)
+
+---
+
+## Planning Workflow
+
+```
+User Input
+   ↓
+LLM Planning (Gemini)
+   ↓
+JSON Plan (steps)
+   ↓
+Sequential Execution
+   ↓
+Intermediate Outputs
+   ↓
+Final Result
+```
 
 ---
 
@@ -128,27 +181,27 @@ Agent: Completed! Final result: 25
 * Install dependency:
 
   ```bash
-  pip install openai
+  pip install requests
   ```
-* Groq API key (optional, for LLM planning)
 
 ---
 
 ## Testing
 
-Try the following inputs:
+Try the following:
 
 * `Find the average of 10, 20, 30 and summarize the result`
-* `random number`
-* `weather in Mumbai`
 * `Get weather in London and then calculate 100/4`
+* `Generate a random number and then add 10 to it`
+* `Generate a password of length 16`
+* `Convert 100 km to miles`
 
 ---
 
 ## Key Learning Outcomes
 
-* Task decomposition strategies
+* LLM-based task decomposition
+* Structured planning using JSON
 * Sequential execution with result chaining
-* LLM-based planning techniques
-* Intermediate output visualization
-* Error handling in multi-step workflows
+* Prompt engineering for planning agents
+* Robust fallback mechanisms
