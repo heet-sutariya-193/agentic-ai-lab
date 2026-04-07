@@ -1,28 +1,47 @@
-# Assignment 3: LLM-Based Agent
+# Assignment 3: LLM-Based Agent (Gemini API)
 
 ## Objective
 
-Replace rule-based decision logic with a Language Model (LLM) to improve decision-making and maintain interaction logs.
+Enhance the agent by integrating a Language Model (LLM) for intelligent decision-making while maintaining a fallback rule-based system and interaction logging.
 
 ---
 
 ## Features
 
-### LLM Integration
+### LLM Integration (Gemini API)
 
-* Uses Groq API with a Llama model for intelligent decision-making
-* Falls back to rule-based mode if API is unavailable
-* Handles natural language queries effectively
+* Uses **Google Gemini API (`gemini-2.5-flash`)** for decision-making
+* Sends user queries via HTTP request (`requests` library)
+* Determines which tool to use and extracts parameters
+* Uses structured output format: `tool|parameters`
+* Falls back to rule-based logic if API fails
+
+---
+
+### Hybrid Decision System
+
+* **Primary**: LLM-based tool selection
+* **Fallback**: Rule-based parsing using regex and keyword matching
+* Ensures reliability even without API access
+
+---
 
 ### Logging System
 
-* Records every interaction
-* Logs include timestamp, input, selected tool, parameters, and output
-* Stored in `agent_logs.json` for later analysis
+* Stores every interaction in `agent_logs.json`
+* Each log contains:
+
+  * Timestamp
+  * User input
+  * Selected tool
+  * Parameters
+  * Output
+
+---
 
 ### Tool Support
 
-All tools from Assignment 2 are supported:
+All tools from Assignment 2 are integrated:
 
 * calculate
 * weather
@@ -35,33 +54,35 @@ All tools from Assignment 2 are supported:
 
 ## How to Run
 
-```bash id="1m4jsh"
-# Without API key (rule-based mode)
-python llm_agent.py
-
-# With Groq API key (LLM mode)
-set GROQ_API_KEY=your_key_here
+```bash
 python llm_agent.py
 ```
+
+> Note: API key is already embedded in the code (for lab purposes)
 
 ---
 
 ## Example Interactions
 
-```text id="0kkk5d"
+```text
 You: random number
 ==================================================
 [INPUT] random number
+Thinking...
+[GEMINI RESPONSE] random|1,100
 [DECISION] Using tool: random
 [PARAMS] 1,100
 [OUTPUT] Random number between 1 and 100: 42
 
 Agent: Random number between 1 and 100: 42
-Randomness delivered!
+```
 
+```text
 You: calculate 100 divided by 4
 ==================================================
 [INPUT] calculate 100 divided by 4
+Thinking...
+[GEMINI RESPONSE] calculate|100/4
 [DECISION] Using tool: calculate
 [PARAMS] 100/4
 [OUTPUT] Result: 25
@@ -71,11 +92,39 @@ Agent: Result: 25
 
 ---
 
-## Log File Format
+## How LLM Decision Works
 
-`agent_logs.json` stores interactions:
+The agent sends a structured prompt to Gemini:
 
-```json id="q9c2mn"
+* Lists all available tools
+* Instructs model to respond in format:
+
+  ```
+  tool_name|parameters
+  ```
+
+Example:
+
+* Input: `what is 2+3` → `calculate|2+3`
+* Input: `weather in Mumbai` → `weather|Mumbai`
+
+---
+
+## Code Structure
+
+* `LLMAgent` class – Core agent implementation 
+* `llm_decision()` – Calls Gemini API and parses response
+* `rule_based_decision()` – Backup logic using regex
+* `execute_tool()` – Executes selected tool
+* `clean_expression()` – Sanitizes math expressions
+* `process()` – Main pipeline (Input → Decision → Execution → Logging)
+* `show_logs()` – Displays interaction history
+
+---
+
+## Logging Format
+
+```json
 [
   {
     "timestamp": "2026-03-30T14:30:25.123456",
@@ -89,38 +138,24 @@ Agent: Result: 25
 
 ---
 
-## Code Structure
-
-* `__init__()` – Initializes Groq API client with fallback
-* `llm_decision()` – Uses LLM to select appropriate tool
-* `rule_based_decision()` – Fallback logic
-* `execute_tool()` – Executes selected tool
-* `process()` – Main pipeline with logging
-* `show_logs()` – Displays interaction history
-
----
-
 ## Requirements
 
 * Python 3.9 or above
 * Install dependency:
 
   ```bash
-  pip install openai
+  pip install requests
   ```
-* Groq API key (optional, for LLM mode)
 
 ---
 
 ## View Logs
 
-After running the agent:
-
-```bash id="n3l2qz"
+```bash
 type agent_logs.json
 ```
 
-Or type `exit` inside the program to display logs before quitting.
+Or type `exit` in the program to display logs before quitting.
 
 ---
 
@@ -128,6 +163,18 @@ Or type `exit` inside the program to display logs before quitting.
 
 Try the following:
 
-* Natural language: `what is 100 divided by 4?`
-* Direct commands: `random number`
-* Multi-word queries: `weather in Mumbai`
+* `what is 100 divided by 4?`
+* `random number`
+* `weather in Mumbai`
+* `convert 10 km to miles`
+* `password length 16`
+
+---
+
+## Key Learning Outcomes
+
+* LLM-based tool selection
+* Prompt engineering for structured output
+* API integration using HTTP requests
+* Hybrid AI + rule-based systems
+* Logging and debugging AI decisions
