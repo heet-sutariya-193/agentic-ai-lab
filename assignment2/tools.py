@@ -8,39 +8,50 @@ import math
 import random
 import re
 
-# Tool 1: Enhanced Calculator
 def calculate(expression):
     """
     Perform mathematical calculations with enhanced features
     Supports: +, -, *, /, %, **, parentheses, square root, power
     """
+    import re
+    
     try:
+        original = expression
         expression = expression.replace(" ", "")
+        
+        # Handle "X% of Y" pattern - THIS IS THE KEY FIX
+        # Matches: 25% of 200, 25%of200, 25% of200, 25%of 200
+        pattern = re.compile(r'(\d+(?:\.\d+)?)%\s*[oO][fF]\s*(\d+(?:\.\d+)?)')
+        
+        def convert_percent_of(m):
+            p = float(m.group(1))
+            n = float(m.group(2))
+            return str((p / 100) * n)
+        
+        # Apply the conversion repeatedly until no matches
+        while pattern.search(expression):
+            expression = pattern.sub(convert_percent_of, expression)
+        
+        # Handle remaining percentage signs (e.g., "50%")
+        if '%' in expression:
+            expression = re.sub(r'(\d+(?:\.\d+)?)%', r'(\1/100)', expression)
         
         # Handle square root
         if "sqrt" in expression:
-            match = re.search(r'sqrt\((\d+)\)', expression)
-            if match:
-                num = float(match.group(1))
+            sqrt_match = re.search(r'sqrt\((\d+)\)', expression)
+            if sqrt_match:
+                num = float(sqrt_match.group(1))
                 result = math.sqrt(num)
                 return f"Result: {result}"
         
-        # Handle power
+        # Handle power operator
         if "^" in expression:
             expression = expression.replace("^", "**")
         
-        # Handle percentage
-        if "%" in expression:
-            expression = expression.replace("%", "/100")
-        
-        # Validate characters
-        allowed_chars = set("0123456789+-*/()%**. ")
-        if not all(c in allowed_chars or c.isdigit() for c in expression):
-            return "Error: Only basic math operations allowed (+, -, *, /, %, ^, sqrt)"
-        
+        # Evaluate
         result = eval(expression)
         
-        # Format result
+        # Format result nicely
         if isinstance(result, float):
             if result.is_integer():
                 result = int(result)
@@ -164,13 +175,13 @@ def random_number(min_val=1, max_val=100):
         
         # Add fun fact
         facts = [
-            f"That's your lucky number!",
-            f"Interesting choice!",
-            f"Here's your random number.",
-            f"Randomness delivered!"
+            "That's your lucky number!",
+            "Interesting choice!",
+            "Here's your random number.",
+            "Randomness delivered!"
         ]
         
-        return f"Random number between {min_val} and {max_val}: {result}\n{facts[random.randint(0, len(facts)-1)]}"
+        return f"Random number between {min_val} and {max_val}: {result}\n{random.choice(facts)}"
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -213,7 +224,7 @@ def generate_password(length=12):
     """
     import string
     characters = string.ascii_letters + string.digits + "!@#$%^&*"
-    password = ''.join(random.choice(characters) for _ in range(length))
+    password = ''.join(random.choice(characters) for _ in range(int(length)))
     return f"Generated password: {password}"
 
 # Dictionary mapping tool names to functions

@@ -1,8 +1,8 @@
 """
-Assignment 3: LLM-Based Agent with Groq API - Fixed Version
+Assignment 3: LLM-Based Agent with Direct Gemini API
 """
 
-import os
+import requests
 import json
 import datetime
 import sys
@@ -11,29 +11,17 @@ import re
 sys.path.append('C:\\Users\\Heet sutariya\\agentic-ai-lab')
 from assignment2.tools import TOOLS, get_tool_description
 
+# Your Gemini API Key directly here
+API_KEY = "AIzaSyD64DEr782z79FHTkivO8Lt0neyCqhg3Gg"
+MODEL_NAME = "gemini-2.5-flash"
+
 class LLMAgent:
     def __init__(self):
         self.name = "LLMAI"
         self.tools = TOOLS
         self.logs = []
-        
-        # PUT YOUR GROQ API KEY DIRECTLY HERE
-        YOUR_GROQ_API_KEY = "key"
-        
-        try:
-            print("Using Groq API")
-            from openai import OpenAI
-            self.client = OpenAI(
-                api_key=YOUR_GROQ_API_KEY,
-                base_url="https://api.groq.com/openai/v1"
-            )
-            self.model = "llama-3.1-8b-instant"
-            self.use_llm = True
-        except Exception as e:
-            print(f"Error: {e}")
-            print("Falling back to rule-based mode")
-            self.use_llm = False
-            self.client = None
+        self.use_llm = True
+        print(f"Connected to Gemini API using model: {MODEL_NAME}")
     
     def clean_expression(self, expression):
         if not expression:
@@ -73,53 +61,106 @@ class LLMAgent:
         elif 'random' in user_input_lower:
             return {"tool": "random", "params": "1,100"}
         
+        elif 'password' in user_input_lower:
+            numbers = re.findall(r'\d+', user_input)
+            length = numbers[0] if numbers else 12
+            return {"tool": "password", "params": length}
+        
+        elif 'convert' in user_input_lower:
+            return {"tool": "convert", "params": user_input}
+        
         else:
-            return {"response": "Try: calculate 2+3, weather in Mumbai, random, or summarize text"}
+            return {"response": "Try: calculate 2+3, weather in Mumbai, random, summarize, convert, or password"}
     
     def llm_decision(self, user_input):
-        if not self.use_llm:
-            return self.rule_based_decision(user_input)
+        """Use Gemini API to decide which tool to use"""
+        
+        # System prompt with ALL tools
+        system_prompt = """
+You are a decision-making agent. You have these tools:
+1. 'calculate': use this for mathematical equations (+, -, *, /, parentheses, %)
+2. 'weather': use this for weather inquiries
+3. 'summarize': use this to summarize text
+4. 'random': use this to generate random numbers
+5. 'convert': use this for unit conversions (km to miles, kg to lbs, C to F)
+6. 'password': use this to generate random passwords
+
+Based on the user's query, respond ONLY with the exact name of the tool to use, followed by a pipe '|', followed by the argument to pass to the tool.
+
+Examples:
+- User: "what is 2+3" → calculate|2+3
+- User: "20% of 500" → calculate|(20/100)*500
+- User: "weather in Mumbai" → weather|Mumbai
+- User: "summarize this text" → summarize|this text
+- User: "random number" → random|1,100
+- User: "random between 1 and 50" → random|1,50
+- User: "convert 10 km to miles" → convert|10 km to miles
+- User: "password length 16" → password|16
+- User: "generate password" → password|12
+- User: "hello" → none|none
+
+Important: Use exact tool names: calculate, weather, summarize, random, convert, password
+
+If you cannot answer, respond with 'none|none'.
+"""
+        
+        # The URL for Gemini API
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL_NAME}:generateContent?key={API_KEY}"
+        
+        # Payload for the API
+        payload = {
+            "contents": [{
+                "parts": [{"text": f"System Instructions: {system_prompt}\n\nUser Query: {user_input}"}]
+            }],
+            "generationConfig": {
+                "temperature": 0.0
+            }
+        }
         
         try:
-            prompt = f"""You are an AI assistant. Choose the right tool for this user request: "{user_input}"
-
-Available tools:
-- calculate: For mathematical calculations. Example: user says "calculate 100 divided by 4", you respond with tool calculate and params "100/4"
-- weather: For weather information. Example: user says "weather in London", you respond with tool weather and params "London"
-- summarize: To summarize text. Example: user says "summarize this is a long text", you respond with tool summarize and params "this is a long text"
-- random: To generate random numbers. Example: user says "random number", you respond with tool random and params "1,100"
-
-Your response must be a valid JSON object with no extra text. Examples:
-{"tool": "calculate", "params": "100/4"}
-{"tool": "weather", "params": "London"}
-{"tool": "summarize", "params": "text to summarize"}
-{"tool": "random", "params": "1,100"}
-
-Now respond with only the JSON object:"""
+            print("Thinking...")
+            response = requests.post(url, headers={'Content-Type': 'application/json'}, json=payload)
             
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0,
-                max_tokens=150
-            )
-            
-            result = response.choices[0].message.content.strip()
-            print(f"[API RESPONSE] {result}")
-            
-            try:
-                decision = json.loads(result)
-                if decision.get("tool") == "calculate":
-                    params = decision.get("params", "")
-                    decision["params"] = self.clean_expression(params)
-                return decision
-            except json.JSONDecodeError as e:
-                print(f"JSON parse error: {e}")
+            if response.status_code == 200:
+                data = response.json()
+                llm_text = data['candidates'][0]['content']['parts'][0]['text'].strip()
+                print(f"[GEMINI RESPONSE] {llm_text}")
+                
+                # Parse the decision
+                if '|' in llm_text:
+                    parts = llm_text.split('|')
+                    tool_name = parts[0].strip().lower()
+                    params = parts[1].strip() if len(parts) > 1 else None
+                    
+                    print(f"[DEBUG] Tool: {tool_name}, Params: {params}")
+                    
+                    # Handle tool selection
+                    if tool_name == "calculate":
+                        return {"tool": "calculate", "params": params}
+                    elif tool_name == "weather":
+                        return {"tool": "weather", "params": params}
+                    elif tool_name == "summarize":
+                        return {"tool": "summarize", "params": params}
+                    elif tool_name == "random":
+                        return {"tool": "random", "params": params}
+                    elif tool_name == "convert":
+                        return {"tool": "convert", "params": params}
+                    elif tool_name == "password":
+                        return {"tool": "password", "params": params}
+                    elif tool_name == "none":
+                        return {"response": "I don't know how to help with that. Try: calculate, weather, summarize, random, convert, or password"}
+                    else:
+                        print(f"[DEBUG] Unknown tool, falling back to rule-based")
+                        return self.rule_based_decision(user_input)
+                else:
+                    print(f"[DEBUG] No pipe found, falling back to rule-based")
+                    return self.rule_based_decision(user_input)
+            else:
+                print(f"API Error: {response.status_code}")
                 return self.rule_based_decision(user_input)
                 
         except Exception as e:
             print(f"API Error: {e}")
-            print("Using rule-based instead")
             return self.rule_based_decision(user_input)
     
     def execute_tool(self, tool_name, params):
@@ -128,6 +169,8 @@ Now respond with only the JSON object:"""
         
         try:
             if tool_name == "calculate":
+                if params:
+                    params = self.clean_expression(params)
                 return self.tools[tool_name](params)
             elif tool_name == "weather":
                 return self.tools[tool_name](params)
@@ -138,6 +181,16 @@ Now respond with only the JSON object:"""
                     parts = params.split(',')
                     return self.tools[tool_name](parts[0], parts[1])
                 return self.tools[tool_name]()
+            elif tool_name == "convert":
+                return self.tools[tool_name](params)
+            elif tool_name == "password":
+                # Extract number from params
+                if params:
+                    numbers = re.findall(r'\d+', str(params))
+                    length = int(numbers[0]) if numbers else 12
+                else:
+                    length = 12
+                return self.tools[tool_name](length)
             else:
                 return self.tools[tool_name](params)
         except Exception as e:
@@ -188,7 +241,7 @@ Now respond with only the JSON object:"""
 
 def main():
     print("=" * 60)
-    print("Assignment 3: LLM-Based Agent")
+    print("Assignment 3: LLM-Based Agent with Gemini API")
     print("=" * 60)
     print(get_tool_description())
     print("\n" + "="*60)
@@ -197,24 +250,32 @@ def main():
     print("  weather in Mumbai")
     print("  random number")
     print("  summarize This is a test text.")
+    print("  password length 16")
+    print("  convert 10 km to miles")
+    print("  What is 25 multiplied by 4?")
     print("  exit to quit")
     print("="*60)
     
     agent = LLMAgent()
     
     while True:
-        user_input = input("\nYou: ").strip()
-        
-        if user_input.lower() in ['exit', 'quit', 'bye']:
-            agent.show_logs()
-            print("\nGoodbye!")
+        try:
+            user_input = input("\nYou: ").strip()
+            
+            if user_input.lower() in ['exit', 'quit', 'bye']:
+                agent.show_logs()
+                print("\nGoodbye!")
+                break
+            
+            if not user_input:
+                continue
+            
+            response = agent.process(user_input)
+            print(f"\nAgent: {response}")
+            
+        except KeyboardInterrupt:
+            print("\n\nGoodbye!")
             break
-        
-        if not user_input:
-            continue
-        
-        response = agent.process(user_input)
-        print(f"\nAgent: {response}")
 
 if __name__ == "__main__":
     main()

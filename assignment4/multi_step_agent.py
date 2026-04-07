@@ -1,11 +1,13 @@
-import os
+"""
+Assignment 4: Multi-Step Planning Agent with Gemini API
+"""
+
+import requests
 import json
 import datetime
 import sys
 import re
-from openai import OpenAI
 
-# Ensure the path points to your main lab folder to find assignment2/tools.py
 sys.path.append('C:\\Users\\Heet sutariya\\agentic-ai-lab')
 try:
     from assignment2.tools import TOOLS
@@ -13,33 +15,24 @@ except ImportError:
     print("Error: Could not find tools.py in assignment2 folder.")
     TOOLS = {}
 
+# Your Gemini API Key
+API_KEY = "AIzaSyD64DEr782z79FHTkivO8Lt0neyCqhg3Gg"
+MODEL_NAME = "gemini-2.5-flash"
+
 class MultiStepAgent:
     def __init__(self):
         self.name = "PlannerAI"
         self.tools = TOOLS
-        # Your Groq API Key
-        self.api_key = "key"
-        
-        try:
-            self.client = OpenAI(
-                api_key=self.api_key,
-                base_url="https://api.groq.com/openai/v1"
-            )
-            # Updated to a currently supported model
-            self.model = "llama-3.1-8b-instant"
-            print("PlannerAI Online: Connected to Groq using Llama 3.1 model.")
-        except Exception as e:
-            print(f"Connection Error: {e}")
-            self.client = None
+        self.use_llm = True
+        print(f"Connected to Gemini API using model: {MODEL_NAME}")
 
     def create_plan(self, user_query):
         """
         Task Decomposition: Uses LLM to break query into a sequence of steps.
-        Requirement: Assignment 4, Task 1
         """
-        prompt = f"""
+        system_prompt = f"""
 You are a planning agent. Break the user request into a list of sequential steps.
-Available tools: calculate, weather, summarize, random.
+Available tools: calculate, weather, summarize, random, convert, password.
 
 User Request: "{user_query}"
 
@@ -53,7 +46,10 @@ Important rules:
 - For weather, params should be a city name
 - For summarize, params should be the text to summarize
 - For random, params should be like "1,100"
+- For convert, params should be like "10 km to miles"
+- For password, params should be like "16"
 
+Examples:
 Example for "Find average of 5, 10, 15":
 [
     {{"step": 1, "tool": "calculate", "params": "5+10+15"}},
@@ -67,48 +63,59 @@ Example for "Find average of 10, 20, 30 and summarize":
     {{"step": 3, "tool": "summarize", "params": "The average is"}}
 ]
 
-Return only the JSON list, no other text."""
+Example for "Get weather and then calculate":
+[
+    {{"step": 1, "tool": "weather", "params": "London"}},
+    {{"step": 2, "tool": "calculate", "params": "100/4"}}
+]
+
+Return ONLY the JSON list, no other text.
+"""
+        
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL_NAME}:generateContent?key={API_KEY}"
+        
+        payload = {
+            "contents": [{
+                "parts": [{"text": system_prompt}]
+            }],
+            "generationConfig": {
+                "temperature": 0.0
+            }
+        }
         
         try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": "You are a planning assistant that outputs only valid JSON lists."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0,
-                max_tokens=500
-            )
+            print("Planning...")
+            response = requests.post(url, headers={'Content-Type': 'application/json'}, json=payload)
             
-            content = response.choices[0].message.content.strip()
-            print(f"[PLAN RAW] {content}")
-            
-            # Parse the JSON response
-            try:
-                # Try to parse as JSON
-                data = json.loads(content)
+            if response.status_code == 200:
+                data = response.json()
+                content = data['candidates'][0]['content']['parts'][0]['text'].strip()
+                print(f"[PLAN RAW] {content}")
                 
-                # Handle different response formats
-                if isinstance(data, list):
-                    return data
-                elif isinstance(data, dict):
-                    # Try common keys
-                    if "steps" in data:
-                        return data["steps"]
-                    elif "plan" in data:
-                        return data["plan"]
-                    else:
-                        # Try to extract steps from values
-                        for value in data.values():
-                            if isinstance(value, list):
-                                return value
-                        return []
-                else:
-                    return []
+                # Parse the JSON response
+                try:
+                    data = json.loads(content)
                     
-            except json.JSONDecodeError as e:
-                print(f"JSON Parse Error: {e}")
-                # Fallback: create a simple plan based on keywords
+                    if isinstance(data, list):
+                        return data
+                    elif isinstance(data, dict):
+                        if "steps" in data:
+                            return data["steps"]
+                        elif "plan" in data:
+                            return data["plan"]
+                        else:
+                            for value in data.values():
+                                if isinstance(value, list):
+                                    return value
+                            return []
+                    else:
+                        return []
+                        
+                except json.JSONDecodeError as e:
+                    print(f"JSON Parse Error: {e}")
+                    return self.fallback_plan(user_query)
+            else:
+                print(f"API Error: {response.status_code}")
                 return self.fallback_plan(user_query)
                 
         except Exception as e:
@@ -136,7 +143,6 @@ Return only the JSON list, no other text."""
                     "params": f"({numbers_str})/{len(numbers)}"
                 })
                 
-                # Check if summarization is also requested
                 if "summarize" in query_lower or "summary" in query_lower:
                     plan.append({
                         "step": 3,
@@ -162,6 +168,26 @@ Return only the JSON list, no other text."""
                 "step": 1,
                 "tool": "random",
                 "params": "1,100"
+            })
+            return plan
+        
+        # Check for password
+        elif "password" in query_lower:
+            numbers = re.findall(r'\d+', user_query)
+            length = numbers[0] if numbers else 12
+            plan.append({
+                "step": 1,
+                "tool": "password",
+                "params": length
+            })
+            return plan
+        
+        # Check for convert
+        elif "convert" in query_lower:
+            plan.append({
+                "step": 1,
+                "tool": "convert",
+                "params": user_query
             })
             return plan
         
@@ -199,29 +225,11 @@ Return only the JSON list, no other text."""
                 if tool_name == "calculate":
                     if params:
                         # Handle placeholders for previous results
-                        if previous_result is not None:
-                            # Replace placeholder with actual previous result
-                            import re
-                            # Check if params contains X or mentions the random result
-                            if "X" in str(params):
-                                # Extract numeric value from previous result
-                                match = re.search(r'\d+\.?\d*', str(previous_result))
-                                if match:
-                                    num = match.group()
-                                    params = str(params).replace("X", num)
-                            # Also handle cases where we need to use the random number
-                            elif tool_name == "calculate" and "random" in str(plan[0].get("tool", "")):
-                                # If first step was random, use that result
-                                if step_num == 2 and results:
-                                    first_result = results[0]
-                                    match = re.search(r'\d+\.?\d*', str(first_result))
-                                    if match:
-                                        random_num = match.group()
-                                        # If params is like "(1+100)/2+10", replace with actual addition
-                                        if "+10" in str(params):
-                                            params = f"{random_num}+10"
-                                        elif "add" in str(params).lower():
-                                            params = f"{random_num}+10"
+                        if previous_result is not None and "X" in str(params):
+                            match = re.search(r'\d+\.?\d*', str(previous_result))
+                            if match:
+                                num = match.group()
+                                params = str(params).replace("X", num)
                         result = self.tools[tool_name](params)
                     else:
                         result = "Error: No calculation provided"
@@ -230,10 +238,7 @@ Return only the JSON list, no other text."""
                     result = self.tools[tool_name](params)
                 
                 elif tool_name == "summarize":
-                    # If we have a previous result, use it in the summary
                     if previous_result is not None:
-                        # Extract the numeric value for better summary
-                        import re
                         match = re.search(r'\d+\.?\d*', str(previous_result))
                         if match:
                             number = match.group()
@@ -253,6 +258,13 @@ Return only the JSON list, no other text."""
                     else:
                         result = self.tools[tool_name]()
                 
+                elif tool_name == "password":
+                    length = int(params) if params else 12
+                    result = self.tools[tool_name](length)
+                
+                elif tool_name == "convert":
+                    result = self.tools[tool_name](params)
+                
                 else:
                     result = self.tools[tool_name](params)
                 
@@ -260,7 +272,6 @@ Return only the JSON list, no other text."""
                 results.append(result)
                 
                 # Store result for potential use in next steps
-                import re
                 match = re.search(r'[-+]?\d*\.?\d+', str(result))
                 if match:
                     previous_result = float(match.group())
@@ -277,7 +288,6 @@ Return only the JSON list, no other text."""
     def process(self, user_query):
         """
         Main Pipeline: Input -> Plan -> Action -> Output
-        Requirement: Assignment 4 Main Objective
         """
         print(f"\n{'='*60}")
         print(f"QUERY: {user_query}")
@@ -307,27 +317,25 @@ Return only the JSON list, no other text."""
             for i, result in enumerate(results, 1):
                 print(f"Step {i} Result: {result}")
             
-            # Return the last result as the final answer
             return f"Completed! Final result: {results[-1]}"
         else:
             return "No results generated."
 
 def main():
     print("="*60)
-    print("Assignment 4: Multi-Step Planning Agent")
+    print("Assignment 4: Multi-Step Planning Agent with Gemini API")
     print("="*60)
     print("\nThis agent can break complex tasks into multiple steps.")
     print("\nExample queries:")
     print("  - Find the average of 10, 20, 30 and then summarize the result")
     print("  - Get weather in London and then calculate 100/4")
     print("  - Generate a random number and then add 10 to it")
+    print("  - Generate a password of length 16")
+    print("  - Convert 100 km to miles")
     print("\nType 'exit' to quit")
     print("="*60)
     
     agent = MultiStepAgent()
-    
-    if not agent.client:
-        print("\nWARNING: Could not connect to Groq API. Planning will use rule-based fallback.")
     
     while True:
         try:
