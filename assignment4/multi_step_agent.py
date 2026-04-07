@@ -16,7 +16,7 @@ except ImportError:
     TOOLS = {}
 
 # Your Gemini API Key
-API_KEY = "AIzaSyD64DEr782z79FHTkivO8Lt0neyCqhg3Gg"
+API_KEY = "key"
 MODEL_NAME = "gemini-2.5-flash"
 
 class MultiStepAgent:
