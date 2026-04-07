@@ -12,7 +12,7 @@ sys.path.append('C:\\Users\\Heet sutariya\\agentic-ai-lab')
 from assignment2.tools import TOOLS, get_tool_description
 
 # Your Gemini API Key directly here
-API_KEY = "AIzaSyD64DEr782z79FHTkivO8Lt0neyCqhg3Gg"
+API_KEY = "key"
 MODEL_NAME = "gemini-2.5-flash"
 
 class LLMAgent:
