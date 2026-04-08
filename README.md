@@ -1,4 +1,4 @@
-# Agentic AI Lab Assignments
+# Agentic AI Lab Assignment
 
 ## Overview
 
