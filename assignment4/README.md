@@ -205,3 +205,6 @@ Try the following:
 * Sequential execution with result chaining
 * Prompt engineering for planning agents
 * Robust fallback mechanisms
+
+# screenshot of results
+<img width="666" height="901" alt="image" src="https://github.com/user-attachments/assets/da18284e-4ff0-4d43-b05e-87991e4b92f4" />
