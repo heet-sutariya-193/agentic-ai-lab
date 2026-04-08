@@ -110,3 +110,8 @@ Try the following:
 * `convert 5 kg to lbs` → 11.02 lbs
 * `password` → Generated password
 * `history` → Conversation log
+
+# screenshot of result
+<img width="569" height="397" alt="image" src="https://github.com/user-attachments/assets/efe4ceae-f03d-482b-b521-322897a37a5b" />
+<img width="539" height="500" alt="Screenshot 2026-04-08 111741" src="https://github.com/user-attachments/assets/ddcf5be9-deb5-40b2-bae9-e58b4e9b3ee4" />
+
