@@ -104,3 +104,6 @@ Try the following inputs:
 * `what is 100/4` → 25
 * `help` → Command list
 * `exit` → Exit program
+
+# screenshots of results
+<img width="519" height="831" alt="image" src="https://github.com/user-attachments/assets/2b3fd8db-d0c8-4c09-bfd2-d3115bc2f472" />
