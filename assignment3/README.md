@@ -178,3 +178,7 @@ Try the following:
 * API integration using HTTP requests
 * Hybrid AI + rule-based systems
 * Logging and debugging AI decisions
+
+# Screenshots of results
+<img width="540" height="361" alt="Screenshot 2026-04-08 105557" src="https://github.com/user-attachments/assets/ee8b455a-0aff-46e0-bb64-903d985db36b" />
+<img width="743" height="325" alt="Screenshot 2026-04-08 105650" src="https://github.com/user-attachments/assets/698c7fa1-f990-448a-9a93-4d3611aab31a" />
