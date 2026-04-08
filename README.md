@@ -2,74 +2,82 @@
 
 ## Overview
 
-This repository contains four progressive assignments demonstrating Agentic AI concepts, ranging from basic rule-based agents to advanced multi-step planning agents with LLM integration.
+This repository contains four progressive assignments demonstrating Agentic AI concepts, from rule-based agents to multi-step LLM-powered planning systems. Each assignment builds on the previous one to show the evolution of intelligent agents.
+
+---
+
+## Key Highlights
+
+* 4 complete agent implementations
+* 6+ tools (calculate, weather, summarize, random, convert, password)
+* Direct LLM integration using Gemini API
+* Multi-step planning and execution
+* Natural language understanding
+* Fallback mechanisms for reliability
+* Interaction logging using JSON
 
 ---
 
 ## Assignments
 
-### Assignment 1: Simple Rule-Based Agent
+### Assignment 1: Rule-Based Agent
 
-A basic agent that uses keyword matching to identify user intent and perform actions.
+Basic agent using keyword matching and regex for intent detection.
 
-* **Location**: `/assignment1`
-* **Key Features**:
+**Features:**
 
-  * Intent identification
-  * Basic calculations
-  * Date and time handling
-  * Greeting responses
+* Greeting responses
+* Mathematical calculations
+* Date and time handling
+* Help system
 
 ---
 
 ### Assignment 2: Tool-Using Agent
 
-An agent with modular tools that can perform various tasks based on user input.
+Modular agent with multiple tools and better input handling.
 
-* **Location**: `/assignment2`
-* **Key Features**:
+**Tools:**
 
-  * Multiple tools (calculate, weather, summarize, random, convert, password)
-  * Modular architecture
-  * Tool selection based on input
+* Calculate
+* Weather
+* Summarize
+* Random
+* Convert
+* Password
+
+**Features:**
+
+* Tool selection based on input
+* Parameter extraction
+* Conversation history
 
 ---
 
 ### Assignment 3: LLM-Based Agent
 
-An agent that uses Groq's LLM API for intelligent decision-making with logging support.
+Agent enhanced with Gemini API for intelligent tool selection.
 
-* **Location**: `/assignment3`
-* **Key Features**:
+**Features:**
 
-  * LLM integration
-  * Rule-based fallback system
-  * Interaction logging
-
----
-
-### Assignment 4: Multi-Step Agent
-
-An agent that breaks complex tasks into multiple steps and executes them sequentially.
-
-* **Location**: `/assignment4`
-* **Key Features**:
-
-  * Task decomposition
-  * Sequential execution
-  * Intermediate outputs
+* LLM-based decision making
+* Rule-based fallback
+* Structured tool selection (`tool | params`)
+* Interaction logging (`agent_logs.json`)
 
 ---
 
-## Requirements
+### Assignment 4: Multi-Step Planning Agent
 
-* Python 3.9 or above
-* Required package:
+Advanced agent that breaks complex queries into multiple steps and executes them sequentially.
 
-  ```bash
-  pip install openai
-  ```
-* Groq API key (optional, for Assignment 3 LLM mode)
+**Features:**
+
+* LLM-based task decomposition
+* JSON-based execution plan
+* Sequential execution with chaining
+* Intermediate outputs
+* Fallback planning
 
 ---
 
@@ -95,23 +103,25 @@ python multi_step_agent.py
 
 ---
 
+## Requirements
+
+* Python 3.9+
+* Install dependency:
+
+```bash
+pip install requests
+```
+
+---
+
 ## Project Structure
 
 ```text
 agentic-ai-lab/
 ├── assignment1/
-│   ├── simple_agent.py
-│   └── README.md
 ├── assignment2/
-│   ├── tools.py
-│   ├── agent.py
-│   └── README.md
 ├── assignment3/
-│   ├── llm_agent.py
-│   └── README.md
 ├── assignment4/
-│   ├── multi_step_agent.py
-│   └── README.md
 └── README.md
 ```
 
@@ -119,11 +129,11 @@ agentic-ai-lab/
 
 ## Learning Outcomes
 
-* Understanding agent architecture (Input → Decision → Action)
-* Tool abstraction and modular programming
-* LLM integration for intelligent decision-making
-* Task decomposition and sequential planning
-* Logging and error handling
+* Agent architecture (Input → Decision → Action)
+* Tool abstraction and modular design
+* LLM integration and prompt engineering
+* Task decomposition and planning
+* Sequential execution and state handling
 
 ---
 
@@ -131,8 +141,6 @@ agentic-ai-lab/
 
 Heet Sutariya
 
----
-
 ## Date
 
-March 2026
+April 2026
